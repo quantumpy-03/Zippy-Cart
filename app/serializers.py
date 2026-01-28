@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, CustomerProfile, VendorProfile
 from .validators import validate_password_strength
 
-
+#  Craete user serializer
 class CreateUserSerializers(serializers.ModelSerializer):
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True, min_length=8, required=True, help_text='Password must be at least 8 characters and contain an uppercase letter, a lowercase letter, a number, and a special character.')
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True, min_length=8, required=True, help_text="Please confirm your password.")
@@ -37,11 +37,8 @@ class CreateUserSerializers(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         return user
 
-class UserProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'email', 'username', 'role', 'first_name', 'last_name']
 
+#  Change password serializer
 class ChangeUserPasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(style={'input_type': 'password'}, write_only=True, required=True)
     new_password = serializers.CharField(style={'input_type': 'password'}, write_only=True, required=True, min_length=8, help_text='New password must be at least 8 characters and contain an uppercase letter, a lowercase letter, a number, and a special character.')
@@ -67,3 +64,25 @@ class ChangeUserPasswordSerializer(serializers.Serializer):
         instance.set_password(validated_data['new_password'])
         instance.save()
         return instance
+
+
+# User profile serializer
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'username', 'role']
+
+
+class CustomerProfileSerializer(serializers.ModelSerializer):
+    age = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = CustomerProfile
+        fields = ['user', 'profile_pic', 'phone_number', 'date_of_birth', 'gender', 'age']
+
+class VendorProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VendorProfile
+        fields = ['user', 'logo', 'phone_number', 'company_name', 'business_registration_number', 'gst_id', 'website']
+
+

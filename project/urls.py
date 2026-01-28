@@ -7,13 +7,14 @@ from rest_framework import permissions
 
 
 schema_view = get_schema_view(
-    openapi.Info(
-        title="Project API",
-        default_version="v1",
-        description="First version of API for this project"
-    ),
-    public=True,
-    permission_classes=(permissions.AllowAny,),
+   openapi.Info(
+      title="Project API",
+      default_version='v1',
+      description="First version of API for this project",
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+   url="https://8000-firebase-zippycart-1769518988054.cluster-sumfw3zmzzhzkx4mpvz3ogth4y.cloudworkstations.dev/",
 )
 
 urlpatterns = [

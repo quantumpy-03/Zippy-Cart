@@ -1,11 +1,14 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import UserCreateView, UserAccountDeleteView, ChangeUserPasswordView, UserProfileView
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
+from rest_framework.routers import DefaultRouter
+from .views import UserCreateView, UserAccountDeleteView, ChangeUserPasswordView, UserIdView, CustomerProfileView, VendorProfileView
 
 
 # router
 router = DefaultRouter()
+# personal-info
+router.register(r'customer-profile', CustomerProfileView, basename='customer_profile')
+router.register(r'vendor-profile', VendorProfileView, basename='vendor_profile')
 
 urlpatterns = [
     #  router urls
@@ -15,7 +18,7 @@ urlpatterns = [
     path('signup/', UserCreateView.as_view(), name='signup'),
 
     # profile
-    path('profile/', UserProfileView.as_view(), name='user_profile'),
+    path('user-id/', UserIdView.as_view(), name='user_profile'),
 
     # login
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

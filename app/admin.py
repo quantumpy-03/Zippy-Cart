@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import User
+from .models import User, CustomerProfile, VendorProfile
+
+admin.site.register([CustomerProfile, VendorProfile])
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
@@ -7,7 +9,7 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ('email', 'username')
     list_filter = ('role', 'is_staff', 'is_active')
     ordering = ('email',)
-    readonly_fields = ('last_login', 'date_joined',) # Fields that are always read-only
+    readonly_fields = ('last_login', 'date_joined', 'email', 'username', 'role', 'password')
     fieldsets = (
         ('Email', {'fields': ('email', 'password')}),
         ('Personal Info', {'fields': ('username', 'role')}),
@@ -17,5 +19,6 @@ class UserAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
+            # Make core fields readonly when editing
             return self.readonly_fields + ('email', 'username', 'role')
         return self.readonly_fields

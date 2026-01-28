@@ -1,3 +1,4 @@
+
 from pathlib import Path
 from dotenv import load_dotenv
 import os
@@ -17,7 +18,16 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG') == 'True'
 
-ALLOWED_HOSTS = ['8000-firebase-zippycart-1769269141192.cluster-6dx7corvpngoivimwvvljgokdw.cloudworkstations.dev', 'localhost', '127.0.0.1']
+# Define a default list of allowed hosts for development
+ALLOWED_HOSTS = [
+    '8000-firebase-zippycart-1769518988054.cluster-sumfw3zmzzhzkx4mpvz3ogth4y.cloudworkstations.dev',
+    'localhost',
+    '127.0.0.1'
+]
+
+# Append hosts from environment variables if they exist
+env_hosts = os.getenv('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS.extend([host for host in env_hosts if host])
 
 
 # Application definition
@@ -36,6 +46,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'cloudinary_storage',
     'drf_yasg',
+    'phonenumber_field',
 ]
 
 AUTH_USER_MODEL = 'app.User'
@@ -151,13 +162,13 @@ CLOUDINARY_STORAGE = {
     'API_SECRET' : os.getenv('API_SECRET')
 }
 
-
 CLOUDINARY_URL = os.getenv('CLOUDINARY_URL')
 
+# Swagger
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = ['https://8000-firebase-zippycart-1769269141192.cluster-6dx7corvpngoivimwvvljgokdw.cloudworkstations.dev']
+CSRF_TRUSTED_ORIGINS = ["https://8000-firebase-zippycart-1769518988054.cluster-sumfw3zmzzhzkx4mpvz3ogth4y.cloudworkstations.dev"]
