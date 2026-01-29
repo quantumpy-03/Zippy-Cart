@@ -1,9 +1,9 @@
 from rest_framework import serializers
-from .models import User, CustomerProfile, VendorProfile
+from .models import User, CustomerProfile, VendorProfile, UserAddress, ProductCategory
 from .validators import validate_password_strength
 
 #  Craete user serializer
-class CreateUserSerializers(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True, min_length=8, required=True, help_text='Password must be at least 8 characters and contain an uppercase letter, a lowercase letter, a number, and a special character.')
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True, min_length=8, required=True, help_text="Please confirm your password.")
     username = serializers.CharField(read_only=True)
@@ -37,7 +37,6 @@ class CreateUserSerializers(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         return user
 
-
 #  Change password serializer
 class ChangeUserPasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(style={'input_type': 'password'}, write_only=True, required=True)
@@ -66,23 +65,29 @@ class ChangeUserPasswordSerializer(serializers.Serializer):
         return instance
 
 
-# User profile serializer
-class UserProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'email', 'username', 'role']
-
-
 class CustomerProfileSerializer(serializers.ModelSerializer):
     age = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = CustomerProfile
-        fields = ['user', 'profile_pic', 'phone_number', 'date_of_birth', 'gender', 'age']
+        fields = '__all__'
+        read_only_fields = ['user']
 
 class VendorProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = VendorProfile
-        fields = ['user', 'logo', 'phone_number', 'company_name', 'business_registration_number', 'gst_id', 'website']
+        fields = '__all__'
+        read_only_fields = ['user']
 
+# User address
+class UserAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAddress
+        fields = '__all__'
 
+#  Category serializer
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductCategory 
+        fields = '__all__'
+        read_only_fields = ['slug']

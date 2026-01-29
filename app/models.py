@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 from django.utils import timezone
-
+from django.utils.text import slugify
 
 #  Model Manager & Custom User Model
 
@@ -38,13 +38,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         VENDOR = 'VENDOR', 'Vendor'
         CUSTOMER = 'CUSTOMER', 'Customer'
         
-    email = models.EmailField(_("Email"), unique=True, null=False, blank=False)
-    username = models.CharField(_("username"), max_length=150, unique=True, blank=False, null=False)
-    is_active = models.BooleanField(_("active"), default=True)
-    is_staff = models.BooleanField(_("staff"),default=False)
-    date_joined = models.DateTimeField(_("date joined"),auto_now_add=True)
+    email = models.EmailField(verbose_name=_("Email"), unique=True, null=False, blank=False)
+    username = models.CharField(verbose_name=_("username"), max_length=150, unique=True, blank=False, null=False)
+    is_active = models.BooleanField(verbose_name=_("active"), default=True)
+    is_staff = models.BooleanField(verbose_name=_("staff"),default=False)
+    date_joined = models.DateTimeField(verbose_name=_("date joined"),auto_now_add=True)
 
-    role = models.CharField(_("User role"), max_length=50, choices=Role.choices)
+    role = models.CharField(verbose_name=_("User role"), max_length=50, choices=Role.choices)
         
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -68,17 +68,16 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class VendorProfile(models.Model):
     user = models.OneToOneField(User, verbose_name=_("Vendor"), on_delete=models.CASCADE, primary_key=True, related_name='vendor_profile')
-    logo = models.ImageField(_("company logo"), upload_to='vendor_logos/', null=True, blank=True)
-    company_name = models.CharField(_("Company Name"), max_length=255)
-    business_registration_number = models.CharField(_("Registration number"), max_length=255)
-    gst_id = models.CharField(_("GST number"), max_length=255)
-    phone_number = PhoneNumberField(_("Phone number"))
-    website = models.URLField(_("Website"), max_length=200, blank=True)
+    logo = models.ImageField(verbose_name=_("company logo"), upload_to='vendor_logos/', null=True, blank=True)
+    company_name = models.CharField(verbose_name=_("Company Name"), max_length=255, unique=True)
+    business_registration_number = models.CharField(verbose_name=_("Registration number"), max_length=255)
+    gst_id = models.CharField(verbose_name=_("GST number"), max_length=255)
+    phone_number = PhoneNumberField(verbose_name=_("Phone number"))
+    website = models.URLField(verbose_name=_("Website"), max_length=200, blank=True)
     is_verified = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.company_name} ({self.user.username})"
-
 
 class CustomerProfile(models.Model):
     class Gender(models.TextChoices):
@@ -86,10 +85,10 @@ class CustomerProfile(models.Model):
         FEMALE = 'FEMALE', 'Female'
 
     user = models.OneToOneField(User, verbose_name=_("Customer"), on_delete=models.CASCADE, primary_key=True, related_name='customer_profile')
-    profile_pic = models.ImageField(_("Profile picture"), upload_to='customer_profiles/', null=True, blank=True)
-    phone_number = PhoneNumberField(_("Phone number"))
-    date_of_birth = models.DateField(_("Date of birth"), blank=True, null=True)
-    gender = models.CharField(_("Gender"), max_length=10, choices=Gender.choices, blank=True, null=True)
+    profile_pic = models.ImageField(verbose_name=_("Profile picture"), upload_to='customer_profiles/', null=True, blank=True)
+    phone_number = PhoneNumberField(verbose_name=_("Phone number"))
+    date_of_birth = models.DateField(verbose_name=_("Date of birth"), blank=True, null=True)
+    gender = models.CharField(verbose_name=_("Gender"), max_length=10, choices=Gender.choices, blank=True, null=True)
 
     @property
     def age(self):
@@ -100,3 +99,30 @@ class CustomerProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+class UserAddress(models.Model):
+    user = models.OneToOneField(User,verbose_name=_("User"), primary_key=True, on_delete=models.CASCADE, related_name='addresses')
+    contry = models.CharField(verbose_name=_("Country"), max_length=50, null=False, blank=True)
+    state = models.CharField(verbose_name=_("State"), max_length=100, null=False, blank=True)
+    city = models.CharField(verbose_name=_("City"), max_length=100, null=False, blank=True)
+    door_number = models.CharField(verbose_name=_("Door number"), max_length=100, null=False, blank=True)
+    street = models.CharField(verbose_name=_("Street"), max_length=100, null=False, blank=True)
+    pincode = models.CharField(verbose_name=_("Pincode"), max_length=10, null=False, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.contry}"
+
+#  Category model
+class ProductCategory(models.Model):
+    category_name = models.CharField(verbose_name=_("Category Name"), max_length=255, unique=True)
+    category_image = models.ImageField(verbose_name=_("Category Image"), upload_to='category_images/', null=True, blank=True)
+    category_description = models.CharField(verbose_name=_("Category Description"), max_length=255)
+    slug = models.SlugField(verbose_name=_("Category Slug"), max_length=255, unique=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.category_name)
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return self.category_name
