@@ -8,6 +8,7 @@ from .views import (
     UserProfileView, 
     CustomerProfileView, 
     VendorProfileView,
+    UserAddressView,
     CategoryViewSet
 )
 
@@ -18,6 +19,7 @@ router = DefaultRouter()
 router.register(r'customer-profile', CustomerProfileView, basename='customer_profile')
 router.register(r'vendor-profile', VendorProfileView, basename='vendor_profile')
 router.register(r'categories', CategoryViewSet, basename='category')
+router.register(r'user-address', UserAddressView, basename='user_address')
 
 urlpatterns = [
     #  router urls

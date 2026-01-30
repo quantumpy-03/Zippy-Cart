@@ -30,4 +30,15 @@ class IsVendorAndOwnerOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:  return request.user and request.user.is_authenticated
         return obj.user == request.user
 
+# Address update
+class IsCustomerOrVendorAuthenticated(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return request.user and request.user.is_authenticated
+        return request.user and request.user.is_authenticated and (request.user.role == User.Role.CUSTOMER or request.user.role == User.Role.VENDOR)
+                
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return request.user and request.user.is_authenticated
+        return obj.user == request.user
 

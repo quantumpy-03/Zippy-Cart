@@ -1,8 +1,13 @@
-
 from rest_framework.generics import CreateAPIView, UpdateAPIView, RetrieveAPIView, DestroyAPIView
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import User, CustomerProfile, VendorProfile, ProductCategory
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
+from .models import (
+    User, 
+    CustomerProfile, 
+    VendorProfile, 
+    UserAddress, 
+    ProductCategory
+    )
 from .serializers import ( 
     UserProfileSerializer, 
     ChangeUserPasswordSerializer, 
@@ -11,7 +16,13 @@ from .serializers import (
     CategorySerializer,
     UserAddressSerializer
 )
-from .permissions import IsVendorOrAdminAllOrReadOnly, IsCustomerAndOwnerOrReadOnly, IsVendorAndOwnerOrReadOnly
+from .permissions import (
+    IsVendorOrAdminAllOrReadOnly, 
+    IsVendorAndOwnerOrReadOnly,
+    IsCustomerAndOwnerOrReadOnly,
+    IsCustomerOrVendorAuthenticated 
+)
+
 
 class UserCreateView(CreateAPIView):
     queryset = User.objects.all()
@@ -57,7 +68,6 @@ class CustomerProfileView(ModelViewSet):
 class VendorProfileView(ModelViewSet):
     serializer_class = VendorProfileSerializer
     permission_classes = [IsVendorAndOwnerOrReadOnly]
-    # authentication_classes = 
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
@@ -76,12 +86,13 @@ class CategoryViewSet(ModelViewSet):
 
 class UserAddressView(ModelViewSet):
     serializer_class = UserAddressSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCustomerOrVendorAuthenticated]
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
             return UserAddress.objects.none()
         return UserAddress.objects.filter(user=self.request.user)
-
-
+        
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
