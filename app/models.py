@@ -126,3 +126,13 @@ class ProductCategory(models.Model):
     
     def __str__(self):
         return self.category_name
+
+#  Product model
+# class ProductList(models.Model):
+#     product_category = models.ForeignKey(ProductCategory, verbose_name=_("Category"), to_field='slug' , on_delete=models.CASCADE, null=False, blank=False)
+#     product_name = models.CharField(_("Product Name"), max_length=255, null=False, blank=False)
+#     product_image = models.ImageField(_("Product Image"), upload_to='product_images/', null=False, blank=False)
+#     product_description = models.TextField(_("Product Description"), null=False, blank=False)
+#     product_stock = models.IntegerField(_("Product Stock"), null=False, blank=False)
+#     product_price = models.DecimalField(_("Product Price"), max_digits=10, decimal_places=2, null=False, blank=False)
+#     product_discount = models.DecimalField(_("Product Discount"), max_digits=4, decimal_places=2, null=True, blank=True)

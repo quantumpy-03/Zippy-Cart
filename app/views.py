@@ -83,6 +83,7 @@ class CategoryViewSet(ModelViewSet):
     queryset = ProductCategory.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsVendorOrAdminAllOrReadOnly]
+    lookup_field = 'slug'
 
 class UserAddressView(ModelViewSet):
     serializer_class = UserAddressSerializer
