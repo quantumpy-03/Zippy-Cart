@@ -122,6 +122,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+    {
+        'NAME': 'app.validators.CustomPasswordStrengthValidator',
+        'OPTIONS': {
+            'min_length': 8,
+            'max_length': 16,
+        },
+    },
 ]
 
 
@@ -172,3 +179,5 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = ["https://8000-firebase-zippycart-1769518988054.cluster-sumfw3zmzzhzkx4mpvz3ogth4y.cloudworkstations.dev"]
+
+        # password_validation.validate_password(attrs['new_password'], user=self.instance)

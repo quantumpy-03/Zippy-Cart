@@ -10,7 +10,7 @@ from .views import (
     CustomerProfileView, 
     VendorProfileView,
     UserAddressView,
-    CategoryViewSet
+    ProductCategoryView
 )
 
 
@@ -19,7 +19,7 @@ router = DefaultRouter()
 # personal-info
 router.register(r'customer-profile', CustomerProfileView, basename='customer_profile')
 router.register(r'vendor-profile', VendorProfileView, basename='vendor_profile')
-router.register(r'categories', CategoryViewSet, basename='category')
+router.register(r'categories', ProductCategoryView, basename='category')
 router.register(r'user-address', UserAddressView, basename='user_address')
 router.register(r'admin/user-list', UserListView, basename='user_list')
 

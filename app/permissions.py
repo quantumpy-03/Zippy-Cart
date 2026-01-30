@@ -2,6 +2,7 @@
 from rest_framework import permissions
 from .models import User
 
+# User only create and update their profile Admin can only view their data
 class IsAdminReadOnlyOrOwnerEdit(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user and request.user.is_authenticated
@@ -12,21 +13,12 @@ class IsAdminReadOnlyOrOwnerEdit(permissions.BasePermission):
             return obj.pk == request.user.pk
         return False
 
-
-# Admin and Vendor can edit and add categories Customers only view categories
-class IsVendorOrAdminAllOrReadOnly(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return request.user and request.user.is_authenticated
-        return request.user and request.user.is_authenticated and (request.user.role == User.Role.ADMINISTRATOR)
-
 # Customer only have full access
 class IsCustomerAndOwnerOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:  return request.user and request.user.is_authenticated
-        if request.method == 'POST':    return request.user and request.user.is_authenticated and request.user.role == User.Role.CUSTOMER
-        return request.user and request.user.is_authenticated
-    def has_object_permission(self, request,view, obj):
+        return request.user and request.user.is_authenticated and request.user.role == User.Role.CUSTOMER
+    def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:  return request.user and request.user.is_authenticated
         return obj.user == request.user
 
@@ -34,9 +26,7 @@ class IsCustomerAndOwnerOrReadOnly(permissions.BasePermission):
 class IsVendorAndOwnerOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:  return request.user and request.user.is_authenticated
-        if request.method in ('POST', 'PUT', 'PATCH', 'DELETE'):    return request.user and request.user.is_authenticated and request.user.role == User.Role.VENDOR
-        return request.user and request.user.is_authenticated
-
+        return request.user and request.user.is_authenticated and request.user.role == User.Role.VENDOR
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:  return request.user and request.user.is_authenticated
         return obj.user == request.user
@@ -47,9 +37,26 @@ class IsCustomerOrVendorAuthenticated(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return request.user and request.user.is_authenticated
         return request.user and request.user.is_authenticated and (request.user.role == User.Role.CUSTOMER or request.user.role == User.Role.VENDOR)
-                
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return request.user and request.user.is_authenticated
         return obj.user == request.user
 
+# Admin can edit and add categories Vendor and Customers only view categories
+class IsVendorOrAdminAllOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return request.user and request.user.is_authenticated
+        return request.user and request.user.is_authenticated and (request.user.role == User.Role.ADMINISTRATOR)
+
+# Product permissions vendor only maintain all data
+class IsProductOwnerOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return request.user and request.user.is_authenticated
+        return request.user and request.user.is_authenticated and request.user.role == User.Role.VENDOR
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return request.user and request.user.is_authenticated
+        return obj.product_vendor.user == request.user
+    

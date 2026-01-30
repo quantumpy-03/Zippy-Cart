@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import User, CustomerProfile, VendorProfile, UserAddress, ProductCategory
+from .models import User, CustomerProfile, VendorProfile, UserAddress, ProductCategory, ProductList
 
-admin.site.register([CustomerProfile, VendorProfile, UserAddress, ProductCategory])
+admin.site.register([CustomerProfile, VendorProfile, UserAddress, ProductCategory, ProductList])
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):

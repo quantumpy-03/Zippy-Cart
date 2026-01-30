@@ -8,7 +8,8 @@ from .models import (
     CustomerProfile, 
     VendorProfile, 
     UserAddress, 
-    ProductCategory
+    ProductCategory,
+    ProductList
     )
 from .serializers import ( 
     CreateUserSerializer,
@@ -17,14 +18,16 @@ from .serializers import (
     CustomerProfileSerializer, 
     VendorProfileSerializer,
     CategorySerializer,
-    UserAddressSerializer
+    UserAddressSerializer,
+    ProductListSerializer
 )
 from .permissions import (
     IsAdminReadOnlyOrOwnerEdit,
     IsVendorOrAdminAllOrReadOnly, 
     IsVendorAndOwnerOrReadOnly,
     IsCustomerAndOwnerOrReadOnly,
-    IsCustomerOrVendorAuthenticated 
+    IsCustomerOrVendorAuthenticated,
+    IsProductOwnerOrReadOnly
 )
 
 
@@ -60,16 +63,14 @@ class ChangeUserPasswordView(UpdateAPIView):
 
     def get_object(self):
         return self.request.user
-    
     def put(self, request, *args, **kwargs):
         self.object = self.get_object()
         serializer = self.get_serializer(self.object, data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response({'message': 'Password changed successfully.'}, status=status.HTTP_200_OK)
-    
     def perform_update(self, serializer):
-        serializer.save()       
+        serializer.save()
 
 class CustomerProfileView(ModelViewSet):
     serializer_class = CustomerProfileSerializer
@@ -99,12 +100,6 @@ class VendorProfileView(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-class CategoryViewSet(ModelViewSet):
-    queryset = ProductCategory.objects.all()
-    serializer_class = CategorySerializer
-    permission_classes = [IsVendorOrAdminAllOrReadOnly]
-    lookup_field = 'slug'
-
 class UserAddressView(ModelViewSet):
     serializer_class = UserAddressSerializer
     permission_classes = [IsCustomerOrVendorAuthenticated]
@@ -117,3 +112,17 @@ class UserAddressView(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+class ProductCategoryView(ModelViewSet):
+    queryset = ProductCategory.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [IsVendorOrAdminAllOrReadOnly]
+    lookup_field = 'slug'
+
+class ProductListView(ModelViewSet):
+    queryset = ProductList.objects.all()
+    serializer_class = ProductListSerializer
+    permission_classes = [IsProductOwnerOrReadOnly]
+    lookup_field = 'slug'
+
+    def perform_create(self, serializer):
+        serializer.save(product_vendor=self.request.user.vendor_profile)
