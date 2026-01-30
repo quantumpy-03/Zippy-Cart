@@ -3,7 +3,7 @@ from .models import User, CustomerProfile, VendorProfile, UserAddress, ProductCa
 from .validators import validate_password_strength
 
 #  Craete user serializer
-class UserProfileSerializer(serializers.ModelSerializer):
+class CreateUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True, min_length=8, required=True, help_text='Password must be at least 8 characters and contain an uppercase letter, a lowercase letter, a number, and a special character.')
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True, min_length=8, required=True, help_text="Please confirm your password.")
     username = serializers.CharField(read_only=True)
@@ -47,24 +47,25 @@ class ChangeUserPasswordSerializer(serializers.Serializer):
     def validate_new_password(self, value):
         validate_password_strength(value)
         return value
-
     def validate(self, attrs):
-
         old_password = attrs.get('old_password')
-
         if not self.instance.check_password(old_password):
             raise serializers.ValidationError({'old_password': 'Old password is incorrect.'})
-
-        if attrs['new_password'] != attrs['new_password2']:
+        elif attrs['new_password'] != attrs['new_password2']:
             raise serializers.ValidationError({'new_password2': 'New passwords do not match.'})
-
+        elif old_password == attrs['new_password']:
+            raise serializers.ValidationError({'new_password': 'New password cannot be the same as the old password.'})
         return attrs
-
     def update(self, instance, validated_data):
         instance.set_password(validated_data['new_password'])
         instance.save()
         return instance
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'username', 'role']
+        read_only_fields = ['id','username', 'role']
 
 class CustomerProfileSerializer(serializers.ModelSerializer):
     age = serializers.IntegerField(read_only=True)

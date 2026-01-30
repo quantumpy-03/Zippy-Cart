@@ -1,6 +1,8 @@
-from rest_framework.generics import CreateAPIView, UpdateAPIView, RetrieveAPIView, DestroyAPIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.generics import CreateAPIView, UpdateAPIView, RetrieveUpdateAPIView, DestroyAPIView
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from .models import (
     User, 
     CustomerProfile, 
@@ -9,14 +11,16 @@ from .models import (
     ProductCategory
     )
 from .serializers import ( 
-    UserProfileSerializer, 
+    CreateUserSerializer,
     ChangeUserPasswordSerializer, 
+    UserProfileSerializer,
     CustomerProfileSerializer, 
     VendorProfileSerializer,
     CategorySerializer,
     UserAddressSerializer
 )
 from .permissions import (
+    IsAdminReadOnlyOrOwnerEdit,
     IsVendorOrAdminAllOrReadOnly, 
     IsVendorAndOwnerOrReadOnly,
     IsCustomerAndOwnerOrReadOnly,
@@ -26,8 +30,14 @@ from .permissions import (
 
 class UserCreateView(CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserProfileSerializer
+    serializer_class = CreateUserSerializer
     permission_classes = [AllowAny]
+
+class UserListView(ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAdminUser]
+    lookup_field = 'pk'
 
 class UserAccountDeleteView(DestroyAPIView):
     serializer_class = UserProfileSerializer
@@ -36,9 +46,9 @@ class UserAccountDeleteView(DestroyAPIView):
     def get_object(self):
         return self.request.user
 
-class UserProfileView(RetrieveAPIView):
+class UserProfileView(RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminReadOnlyOrOwnerEdit]
 
     def get_object(self):
         return self.request.user
@@ -50,6 +60,16 @@ class ChangeUserPasswordView(UpdateAPIView):
 
     def get_object(self):
         return self.request.user
+    
+    def put(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        serializer = self.get_serializer(self.object, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response({'message': 'Password changed successfully.'}, status=status.HTTP_200_OK)
+    
+    def perform_update(self, serializer):
+        serializer.save()       
 
 class CustomerProfileView(ModelViewSet):
     serializer_class = CustomerProfileSerializer

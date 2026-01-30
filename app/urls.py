@@ -2,7 +2,8 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
 from rest_framework.routers import DefaultRouter
 from .views import (
-    UserCreateView, 
+    UserCreateView,
+    UserListView, 
     UserAccountDeleteView, 
     ChangeUserPasswordView, 
     UserProfileView, 
@@ -20,6 +21,7 @@ router.register(r'customer-profile', CustomerProfileView, basename='customer_pro
 router.register(r'vendor-profile', VendorProfileView, basename='vendor_profile')
 router.register(r'categories', CategoryViewSet, basename='category')
 router.register(r'user-address', UserAddressView, basename='user_address')
+router.register(r'admin/user-list', UserListView, basename='user_list')
 
 urlpatterns = [
     #  router urls
@@ -42,6 +44,5 @@ urlpatterns = [
 
     # deactivate
     path('deactivate/', UserAccountDeleteView.as_view(), name='user_account_delete'),
-
 
 ]
