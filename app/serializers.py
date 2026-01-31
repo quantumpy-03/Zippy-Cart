@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import User, CustomerProfile, VendorProfile, UserAddress, ProductCategory, ProductList
 from django.contrib.auth import password_validation
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 
 #  Craete user serializer
@@ -29,9 +30,9 @@ class CreateUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'role': 'The user role cannot be changed after creation.'})
 
         try:
-            password_validation.validate_password(new_password, user=self.instance)
-        except serializers.ValidationError as e:
-            raise serializers.ValidationError({'new_password': list(e.messages)})
+            password_validation.validate_password(attrs['password'], user=self.instance)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError({'password': list(e.messages)})
         return attrs
 
     def create(self, validated_data):
@@ -56,7 +57,7 @@ class ChangeUserPasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError({'new_password': 'New password cannot be the same as the old password.'})
         try:
             password_validation.validate_password(new_password, user=self.instance)
-        except serializers.ValidationError as e:
+        except DjangoValidationError as e:
             raise serializers.ValidationError({'new_password': list(e.messages)})
         return attrs
     def update(self, instance, validated_data):
@@ -110,9 +111,9 @@ class ProductListSerializer(serializers.ModelSerializer):
     def validate_product_name(self, value):
         if len(value)<3:
             raise serializers.ValidationError("Product name must be at least 3 characters long.")
-        elif not value[0].isalpha():
-            raise serializers.ValidationError("Product name must start with a alphabets.")
-        if not value.istitle():
+        if not value[0].isalpha():
+            raise serializers.ValidationError("Product name must start with an alphabet.")
+        if not value[0].isupper():
             raise serializers.ValidationError("Product name must start with a capital letter.")
         return value
     def validate_product_price(self, value):

@@ -1,5 +1,3 @@
-
-from django.core.files.base import ContentFile
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from phonenumber_field.modelfields import PhoneNumberField
@@ -7,7 +5,6 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-
 
 #  Model Manager & Custom User Model
 class CreateUsers(BaseUserManager):
@@ -101,8 +98,8 @@ class CustomerProfile(models.Model):
         return self.user.username
 
 class UserAddress(models.Model):
-    user = models.OneToOneField(User,verbose_name=_("User"), primary_key=True, on_delete=models.CASCADE, related_name='addresses')
-    contry = models.CharField(verbose_name=_("Country"), max_length=50, null=False, blank=True)
+    user = models.OneToOneField(User,verbose_name=_("User"), primary_key=True, on_delete=models.CASCADE, related_name='address')
+    country = models.CharField(verbose_name=_("Country"), max_length=50, null=False, blank=True)
     state = models.CharField(verbose_name=_("State"), max_length=100, null=False, blank=True)
     city = models.CharField(verbose_name=_("City"), max_length=100, null=False, blank=True)
     door_number = models.CharField(verbose_name=_("Door number"), max_length=100, null=False, blank=True)
@@ -110,7 +107,7 @@ class UserAddress(models.Model):
     pincode = models.CharField(verbose_name=_("Pincode"), max_length=10, null=False, blank=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.contry}"
+        return f"{self.user.username} - {self.country}"
 
 #  Category model
 class ProductCategory(models.Model):
@@ -147,15 +144,16 @@ class ProductList(models.Model):
     def clean(self):
         super().clean()
         # Check if product_price is greater than zero
-        if product_price is not None and self.product_price <= 0:
+        if self.product_price is not None and self.product_price <= 0:
             raise ValidationError(
                 {'product_price': _('Product price must be greater than zero.')}
             )
         # Check if product_discount is range between 1 to 99.99
-        if product_discount is not None and self.product_discount <= 0:
-            raise ValidationError({'product_price': _('Product discount must be greater than zero.')})
-        elif product_discount is not None and self.product_discount >= 100:
-            raise ValidationError({'product_price': _('Product discount must be less than zero.')})
+        if self.product_discount is not None:
+            if self.product_discount <= 0:
+                raise ValidationError({'product_discount': _('Product discount must be greater than zero.')})
+            elif self.product_discount >= 100:
+                raise ValidationError({'product_discount': _('Product discount must be less than 100.')})
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -170,11 +168,11 @@ class ProductList(models.Model):
         super().save(*args, **kwargs)
 
     def calculate_price_after_discount(self):
-        product_price = self.product_price
-        product_discount = self.product_discount
-        if product_price and product_discount:
-            product_price_after_discount = (product_price * (1 - (product_discount / 100)))
-            self.product_price_after_discount = product_price_after_discount
+        if self.product_price and self.product_discount and self.product_discount > 0:
+            discount_amount = self.product_price * (self.product_discount / 100)
+            self.product_price_after_discount = self.product_price - discount_amount
+        else:
+            self.product_price_after_discount = None
 
     def __str__(self):
         return self.product_name
